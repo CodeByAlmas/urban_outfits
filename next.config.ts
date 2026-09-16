@@ -1,7 +1,12 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  // Turbopack disable karne ke liye standard config
+  webpack: (config) => {
+    return config;
+  },
 };
 
-export default nextConfig;
+export default function(phase: string) {
+  return nextConfig;
+};
