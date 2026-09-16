@@ -1,7 +1,8 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  // Turbopack disable karne ke liye standard config
+  // Turbopack empty config addition to satisfy Next.js 16 compiler check
+  turbopack: {},
   webpack: (config) => {
     return config;
   },
