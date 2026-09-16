@@ -55,7 +55,7 @@ export default function MenuOverlay({ isOpen, onClose }: MenuOverlayProps) {
 
   const itemVariants = {
     hidden: { opacity: 0, y: -20 },
-    show: { opacity: 1, y: 0, transition: { duration: 0.4, ease: [0.22, 1, 0.36, 1] } },
+    show: { opacity: 1, y: 0, transition: { duration: 0.4, ease: [0.22, 1, 0.36, 1] as const } },
   };
 
   return (
@@ -65,7 +65,7 @@ export default function MenuOverlay({ isOpen, onClose }: MenuOverlayProps) {
           initial={{ opacity: 0, y: '-100%' }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: '-100%' }}
-          transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+          transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] as const }}
           className="fixed inset-0 z-[45] bg-[#FFF9F7] text-black flex flex-col justify-between px-4 sm:px-6 md:px-12 py-4 sm:py-6 overflow-y-auto select-none pointer-events-auto"
         >
           {/* Top Bar spacing to match navbar */}

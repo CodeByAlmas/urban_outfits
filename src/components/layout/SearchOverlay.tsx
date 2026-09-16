@@ -106,7 +106,7 @@ export default function SearchOverlay({ isOpen, onClose }: SearchOverlayProps) {
                 className="flex items-center gap-2 cursor-pointer focus:outline-none"
               >
                 <span className="text-neutral-500">SORT BY :</span>
-                <span className="font-bold black hover:text-[#ED3833]">{selectedSort} ▾</span>
+                <span className="font-bold text-black hover:text-[#ED3833]">{selectedSort} ▾</span>
               </button>
 
               {isSortOpen && (
@@ -203,7 +203,7 @@ export default function SearchOverlay({ isOpen, onClose }: SearchOverlayProps) {
                 [ NO PRODUCTS FOUND MATCHING YOUR SEARCH ]
               </div>
             ) : (
-              sortedProducts.log ? null : sortedProducts.map((product) => {
+              sortedProducts.map((product) => {
                 const isWishlisted = wishlist.includes(product.id);
                 const displayPrice = typeof product.price === 'number' ? `₹ ${product.price.toLocaleString()}` : `₹ ${product.price}`;
                 return (
