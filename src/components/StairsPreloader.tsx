@@ -1,21 +1,32 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 
 export default function StairsPreloader() {
   const [loading, setLoading] = useState(true);
   const [progress, setProgress] = useState(1);
+  const desktopVideoRef = useRef<HTMLVideoElement>(null);
+  const mobileVideoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
-    // 10 seconds (10000ms) total duration for 1 to 100 progress
-    const totalDuration = 10000; 
-    const intervalTime = totalDuration / 100; // 100ms per step
+    // 10 seconds total duration (10000ms) mapped precisely to 100 steps
+    const totalDuration = 10000;
+    const intervalTime = totalDuration / 100;
+
+    if (desktopVideoRef.current) {
+      desktopVideoRef.current.currentTime = 0;
+      desktopVideoRef.current.play().catch(() => {});
+    }
+    if (mobileVideoRef.current) {
+      mobileVideoRef.current.currentTime = 0;
+      mobileVideoRef.current.play().catch(() => {});
+    }
 
     const timer = setInterval(() => {
       setProgress((prev) => {
         if (prev >= 100) {
           clearInterval(timer);
-          setTimeout(() => setLoading(false), 400); // Chhota sa fade out buffer
+          setTimeout(() => setLoading(false), 300);
           return 100;
         }
         return prev + 1;
@@ -27,66 +38,71 @@ export default function StairsPreloader() {
 
   if (!loading) return null;
 
+  // Dynamic scaling for percentage text: grows smoothly from small to large as it reaches 100%
+  const currentScale = 0.7 + (progress / 100) * 0.55;
+
   return (
-    <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center overflow-hidden bg-black select-none">
+    <div className="fixed inset-0 z-[9999] flex flex-col justify-between overflow-hidden bg-white select-none pointer-events-auto">
       
-      {/* Background Videos: Desktop & Mobile Separate */}
+      {/* 1. Background Videos with Loop enabled */}
       <div className="absolute inset-0 w-full h-full overflow-hidden z-0 pointer-events-none">
         {/* Desktop Video */}
         <video
+          ref={desktopVideoRef}
           src="/desktop-preloader.mp4"
           autoPlay
+          loop
           muted
           playsInline
-          className="hidden md:block w-full h-full object-cover filter grayscale contrast-125 brightness-75"
+          className="hidden md:block w-full h-full object-cover"
         />
         {/* Mobile Video */}
         <video
+          ref={mobileVideoRef}
           src="/mobile-preloader.mp4"
           autoPlay
+          loop
           muted
           playsInline
-          className="block md:hidden w-full h-full object-cover filter grayscale contrast-125 brightness-75"
+          className="block md:hidden w-full h-full object-cover"
         />
-        {/* Dark overlay for contrast */}
-        <div className="absolute inset-0 bg-black/50" />
       </div>
 
-      {/* Stairs Panels Animation Effect */}
-      <div className="absolute inset-0 grid grid-cols-5 z-10 pointer-events-none">
-        {[...Array(5)].map((_, i) => (
-          <div
-            key={i}
-            className={`h-full bg-black transition-transform duration-700 ease-in-out ${
-              progress === 100 ? '-translate-y-full opacity-0' : 'translate-y-0 opacity-100'
-            }`}
-            style={{ transitionDelay: `${i * 80}ms` }}
-          />
-        ))}
+      {/* Top Header info (Black text for white background + Initializing text shifted here) */}
+      <div className="relative z-20 w-full px-6 sm:px-12 pt-6 flex justify-between items-center text-black font-mono-custom text-[10px] sm:text-xs uppercase tracking-[0.3em] font-bold">
+        <span>[ URBN // PREVIEW ]</span>
+        <span className="hidden sm:inline text-neutral-600">INITIALIZING CINEMATIC ENVIRONMENT...</span>
+        <span>EXPERIENCE SYSTEM</span>
       </div>
 
-      {/* Foreground Content: Brutalist Loading Progress Line & Counter */}
-      <div className="relative z-20 flex flex-col items-center justify-center space-y-4 px-6 text-white w-full max-w-md">
+      {/* Empty spacer so video center remains completely clean */}
+      <div className="relative z-20 w-full flex-1 pointer-events-none"></div>
+
+      {/* Bottom Area: Red Progress Line at absolute edge + Number tracking with growing scale */}
+      <div className="relative z-30 w-full pb-0 px-0 flex flex-col">
         
-        <div className="font-mono-custom text-xs uppercase tracking-[0.3em] text-neutral-400">
-          [ LOADING EXPERIENCE ]
-        </div>
-
-        {/* 1 - 100 Number Counter */}
-        <div className="font-thunder text-7xl sm:text-9xl font-black tracking-tighter text-white">
-          {progress < 10 ? `0${progress}` : progress}%
-        </div>
-
-        {/* Progress Line Bar */}
-        <div className="w-full h-1 bg-white/20 relative overflow-hidden rounded-full">
+        {/* Percentage Counter following the red line edge, growing in size as it progresses */}
+        <div className="relative w-full h-16 px-4">
           <div 
-            className="absolute top-0 left-0 h-full bg-[#ED3833] transition-all duration-100 ease-linear"
+            className="absolute bottom-1 transition-all duration-75 ease-linear transform -translate-x-1/2 flex items-baseline"
+            style={{ left: `${progress}%` }}
+          >
+            <span 
+              className="font-thunder font-black tracking-tighter text-black text-3xl sm:text-5xl drop-shadow-[0_2px_4px_rgba(255,255,255,0.8)] transition-transform duration-75"
+              style={{ transform: `scale(${currentScale})`, transformOrigin: 'bottom center' }}
+            >
+              {progress < 10 ? `0${progress}` : progress}
+              <span className="text-[#ED3833] ml-0.5">%</span>
+            </span>
+          </div>
+        </div>
+
+        {/* Edge-to-Edge Red Progress Line (Zero margin/padding, pinned to absolute bottom) */}
+        <div className="w-full h-2 bg-neutral-200 relative overflow-hidden rounded-none m-0 p-0">
+          <div 
+            className="absolute top-0 left-0 h-full bg-[#ED3833] transition-all duration-100 ease-linear shadow-[0_0_10px_#ED3833]"
             style={{ width: `${progress}%` }}
           />
-        </div>
-
-        <div className="font-mono-custom text-[10px] uppercase tracking-[0.4em] text-neutral-400 pt-2">
-          URBN // SS '26 PRODUCTION
         </div>
 
       </div>

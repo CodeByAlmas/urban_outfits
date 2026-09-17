@@ -70,7 +70,7 @@ export default function MenuOverlay({ isOpen, onClose }: MenuOverlayProps) {
         >
           {/* Top Bar spacing to match navbar */}
           <div className="flex items-start justify-between w-full uppercase font-mono-custom text-xs tracking-widest opacity-0 pointer-events-none pt-2">
-            <div>MENU --</div>
+            <div>MENU--</div>
             <div>URBN</div>
             <div>BAG.0</div>
           </div>

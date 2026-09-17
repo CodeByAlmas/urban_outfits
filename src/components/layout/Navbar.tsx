@@ -16,9 +16,9 @@ export default function Navbar() {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isBagOpen, setIsBagOpen] = useState(false);
 
-  const [menuText, setMenuText] = useState("MENU +");
+  const [menuText, setMenuText] = useState("MENU+");
   const [shopText, setShopText] = useState("SHOP ALL");
-  const [catText, setCatText] = useState("CATEGORIES +");
+  const [catText, setCatText] = useState("CATEGORIES+");
   const [logoText, setLogoText] = useState("URBAN OUTFITS");
   const [bagText, setBagText] = useState("BAG.0");
   const [searchText, setSearchText] = useState("SEARCH");
@@ -60,7 +60,7 @@ export default function Navbar() {
           {/* MENU */}
           <button 
             onClick={handleMenuClick}
-            onMouseEnter={() => setMenuText("MENUUU+")}
+            onMouseEnter={() => setMenuText(isMenuOpen ? "MENUUU-" : "MENUUU+")}
             onMouseLeave={() => setMenuText(isMenuOpen ? "MENU-" : "MENU+")}
             className="text-left hover:text-[#ED3833] transition-colors whitespace-nowrap cursor-pointer"
           >
