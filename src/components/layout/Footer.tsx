@@ -20,9 +20,40 @@ export default function Footer() {
   const [returnsText, setReturnsText] = useState("Returns");
   const [faqText, setFaqText] = useState("FAQ");
 
+  // Newsletter form state for mobile/footer
+  const [newsletterEmail, setNewsletterEmail] = useState("");
+  const [subscribedModal, setSubscribedModal] = useState(false);
+
+  const handleSubscribe = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (newsletterEmail.trim()) {
+      setSubscribedModal(true);
+      setNewsletterEmail("");
+    }
+  };
+
   return (
     <footer className="relative w-full overflow-hidden select-none -mt-[350px] sm:-mt-[420px] md:-mt-80 z-30 pointer-events-none">
       
+      {/* Newsletter Success Modal Popup */}
+      {subscribedModal && (
+        <div className="fixed inset-0 z-[99999] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 pointer-events-auto">
+          <div className="bg-white border-2 border-black p-6 sm:p-8 max-w-sm w-full shadow-2xl space-y-3 text-center font-mono-custom">
+            <span className="text-[10px] tracking-widest text-[#ED3833] font-bold uppercase">[ STAY IN THE LOOP ]</span>
+            <h3 className="font-thunder text-2xl font-black uppercase">SUBSCRIBED SUCCESSFULLY</h3>
+            <p className="text-[11px] uppercase tracking-wider text-neutral-700 leading-relaxed font-bold">
+              WELCOME TO URBN. YOU ARE NOW ON THE EARLY ACCESS DROP LIST.
+            </p>
+            <button 
+              onClick={() => setSubscribedModal(false)}
+              className="w-full bg-black text-white py-2.5 text-xs uppercase font-bold tracking-widest hover:bg-[#ED3833] transition-colors cursor-pointer"
+            >
+              OKAY →
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* ================= MOBILE RESPONSIVE FOOTER (URBN Logo Protection) ================= */}
       <div className="block md:hidden relative w-full pointer-events-auto">
         <img 
@@ -31,11 +62,11 @@ export default function Footer() {
           className="w-full h-auto object-cover block select-none pointer-events-none"
         />
 
-        {/* Absolute Positioning Layer */}
-        <div className="absolute inset-0 max-w-7xl mx-auto w-full px-4 flex flex-col justify-end pb-8 sm:pb-12 pointer-events-auto">
+        {/* Absolute Positioning Layer with balanced equal horizontal padding to prevent edge overlap */}
+        <div className="absolute inset-0 max-w-7xl mx-auto w-full px-6 sm:px-8 flex flex-col justify-end pb-6 sm:pb-10 pointer-events-auto">
           
-          {/* Grid pushed further up to keep left-bottom URBN logo completely clear */}
-          <div className="grid grid-cols-2 gap-3 font-mono-custom mb-4 pt-40 sm:pt-52 w-full">
+          {/* Grid shifted further up as requested to fit nicely in the black cutout area */}
+          <div className="grid grid-cols-2 gap-3 font-mono-custom mb-3 pt-20 sm:pt-28 w-full">
             
             {/* 01. Shop */}
             <div className="space-y-1">
@@ -135,13 +166,16 @@ export default function Footer() {
               <p className="font-mono-custom text-[8px] uppercase tracking-wider text-neutral-300 leading-tight">
                 New drops. Real stories.
               </p>
-              <form onSubmit={(e) => e.preventDefault()} className="relative pt-0.5">
+              <form onSubmit={handleSubscribe} className="relative pt-0.5">
                 <input 
                   type="email" 
+                  value={newsletterEmail}
+                  onChange={(e) => setNewsletterEmail(e.target.value)}
                   placeholder="YOUR EMAIL" 
                   className="w-full bg-transparent border-b border-neutral-500 pb-0.5 font-mono-custom text-[9px] uppercase tracking-widest text-white placeholder-neutral-500 focus:outline-none focus:border-white transition-all duration-300"
+                  required
                 />
-                <button type="submit" className="absolute right-0 bottom-0.5 text-neutral-300 text-[10px]">&rarr;</button>
+                <button type="submit" className="absolute right-0 bottom-0.5 text-neutral-300 text-[10px] cursor-pointer">&rarr;</button>
               </form>
             </div>
 
@@ -333,15 +367,18 @@ export default function Footer() {
                 New drops. Real stories. No spam.
               </p>
               
-              <form onSubmit={(e) => e.preventDefault()} className="relative pt-1">
+              <form onSubmit={handleSubscribe} className="relative pt-1">
                 <input 
                   type="email" 
+                  value={newsletterEmail}
+                  onChange={(e) => setNewsletterEmail(e.target.value)}
                   placeholder="YOUR EMAIL" 
                   className="w-full bg-transparent border-b border-neutral-500 pb-1.5 font-mono-custom text-xs uppercase tracking-widest text-white placeholder-neutral-500 focus:outline-none focus:border-white focus:tracking-[0.1em] transition-all duration-300"
+                  required
                 />
                 <button 
                   type="submit" 
-                  className="absolute right-0 bottom-1.5 text-neutral-300 hover:text-[#ED3833] hover:scale-110 transition-all duration-300 text-sm"
+                  className="absolute right-0 bottom-1.5 text-neutral-300 hover:text-[#ED3833] hover:scale-110 transition-all duration-300 text-sm cursor-pointer"
                   aria-label="Submit"
                 >
                   &rarr;

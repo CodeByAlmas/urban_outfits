@@ -107,7 +107,7 @@ export default function AdminPanel() {
     } else {
       setLoginAttempts(prev => prev + 1);
       if (loginAttempts + 1 >= 5) setLockoutTime(Date.now() + 30000);
-      showCustomAlert("AUTHENTICATION FAILED", "INVALID CREDENTIALS PROVIDED");
+      showCustomAlert("AUTHENTICATION FAILED", "INVALID CREDENTIALS PROVIDED. ACCESS DENIED.");
       setPasswordInput('');
     }
   };
@@ -367,6 +367,26 @@ export default function AdminPanel() {
   if (viewMode === 'login' && !isAuthenticated) {
     return (
       <div className="min-h-screen bg-[#FFF9F7] text-black font-mono-custom flex items-center justify-center p-4">
+        
+        {/* Custom Theme Popup Modal */}
+        {modalOpen && (
+          <div className="fixed inset-0 z-[99999] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+            <div className="bg-white border-2 border-black p-8 max-w-md w-full shadow-2xl space-y-4 text-center">
+              <span className="text-[10px] tracking-widest text-[#ED3833] font-bold uppercase">[ {modalTitle} ]</span>
+              <h3 className="font-thunder text-3xl font-black uppercase">URBN SYSTEM NOTIFICATION</h3>
+              <p className="text-xs uppercase tracking-wider text-neutral-700 leading-relaxed font-bold">
+                {modalMessage}
+              </p>
+              <button 
+                onClick={() => setModalOpen(false)}
+                className="w-full bg-black text-white py-3 text-xs uppercase font-bold tracking-widest hover:bg-[#ED3833] transition-colors cursor-pointer"
+              >
+                OKAY →
+              </button>
+            </div>
+          </div>
+        )}
+
         <div className="max-w-md w-full bg-white border-2 border-black p-6 sm:p-8 shadow-2xl">
           <div className="text-center mb-6">
             <span className="text-[10px] tracking-widest text-[#ED3833] font-bold uppercase">[ SECURE CLOUD ACCESS ]</span>
@@ -392,6 +412,26 @@ export default function AdminPanel() {
   if (viewMode === 'forgot' && !isAuthenticated) {
     return (
       <div className="min-h-screen bg-[#FFF9F7] text-black font-mono-custom flex items-center justify-center p-4">
+        
+        {/* Custom Theme Popup Modal */}
+        {modalOpen && (
+          <div className="fixed inset-0 z-[99999] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+            <div className="bg-white border-2 border-black p-8 max-w-md w-full shadow-2xl space-y-4 text-center">
+              <span className="text-[10px] tracking-widest text-[#ED3833] font-bold uppercase">[ {modalTitle} ]</span>
+              <h3 className="font-thunder text-3xl font-black uppercase">URBN SYSTEM NOTIFICATION</h3>
+              <p className="text-xs uppercase tracking-wider text-neutral-700 leading-relaxed font-bold">
+                {modalMessage}
+              </p>
+              <button 
+                onClick={() => setModalOpen(false)}
+                className="w-full bg-black text-white py-3 text-xs uppercase font-bold tracking-widest hover:bg-[#ED3833] transition-colors cursor-pointer"
+              >
+                OKAY →
+              </button>
+            </div>
+          </div>
+        )}
+
         <div className="max-w-md w-full bg-white border-2 border-black p-6 sm:p-8 shadow-2xl">
           <div className="text-center mb-6">
             <h1 className="font-thunder text-3xl font-black uppercase">RESET PASSWORD</h1>
