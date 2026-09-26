@@ -3,63 +3,63 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 
-// Collections Data matching reference layout (01 to 08)
+// Collections Data updated with correct query parameter slugs matching shop page filter logic
 const collectionsData = [
   {
     id: "01",
     title: "TOPS",
     subtitle: "TEES / SHIRTS / HOODIES",
-    image: "/hero-model-2.png",
-    slug: "/shop/tops"
+    image: "/tops-image.png",
+    slug: "/shop?category=TOPS"
   },
   {
     id: "02",
     title: "BOTTOMS",
     subtitle: "PANTS / DENIM / CARGOS",
-    image: "/hero-model-3.png",
-    slug: "/shop/bottoms"
+    image: "/bottoms-image.png",
+    slug: "/shop?category=BOTTOMS"
   },
   {
     id: "03",
     title: "OUTERWEAR",
     subtitle: "JACKETS / COATS / BOMBERS",
-    image: "/hero-model-4.png",
-    slug: "/shop/outerwear"
+    image: "/outwear-image.png",
+    slug: "/shop?category=OUTERWEAR"
   },
   {
     id: "04",
     title: "SETS",
     subtitle: "CO-ORDS / TRACKSUITS / SETS",
-    image: "/identity-character.png",
-    slug: "/shop/sets"
+    image: "/sets-image.png",
+    slug: "/shop?category=SETS"
   },
   {
     id: "05",
     title: "ACCESSORIES",
     subtitle: "CAPS / BAGS / JEWELRY / BELTS",
-    image: "/hero-model.png",
-    slug: "/shop/accessories"
+    image: "/accessories-image.png",
+    slug: "/shop?category=ACCESSORIES"
   },
   {
     id: "06",
     title: "FOOTWEAR",
     subtitle: "SNEAKERS / BOOTS / SLIDES",
-    image: "/hero-model-3.png",
-    slug: "/shop/footwear"
+    image: "/footwear-image.png",
+    slug: "/shop?category=FOOTWEAR"
   },
   {
     id: "07",
     title: "LIMITED EDITION",
     subtitle: "EXCLUSIVE DROPS / SPECIALS",
-    image: "/hero-model-2.png",
-    slug: "/shop/limited-edition"
+    image: "/limited-edition-image.png",
+    slug: "/shop?category=LIMITED%20EDITION"
   },
   {
     id: "08",
     title: "SALE",
     subtitle: "LAST PIECES / BEST DEALS",
-    image: "/hero-model-4.png",
-    slug: "/shop/sale"
+    image: "/sale-image.png",
+    slug: "/shop?category=SALE"
   },
 ];
 
@@ -93,7 +93,7 @@ export default function CollectionsPage() {
         </div>
       </div>
 
-      {/* 8-Column Grid / Vertical Cards Layout (Fixed text overlap with proper spacing & text constraints) */}
+      {/* 8-Column Grid / Vertical Cards Layout */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-3 mb-16">
         {collectionsData.map((item) => (
           <Link 
@@ -142,7 +142,7 @@ export default function CollectionsPage() {
         ))}
       </div>
 
-      {/* Bottom Footer Manifesto (Page numbers successfully removed as requested) */}
+      {/* Bottom Footer Manifesto */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start border-t border-black/20 pt-8 font-mono-custom text-xs uppercase tracking-widest">
         
         {/* Left Manifesto */}
@@ -159,6 +159,9 @@ export default function CollectionsPage() {
         </div>
 
       </div>
+
+      {/* Mobile-Only Bottom Spacer to prevent footer overlap */}
+      <div className="block sm:hidden w-full h-64 pointer-events-none" aria-hidden="true" />
 
     </main>
   );

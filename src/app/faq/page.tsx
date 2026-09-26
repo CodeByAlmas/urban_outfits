@@ -50,7 +50,7 @@ export default function FAQPage() {
       </div>
 
       {/* Mobile-Only Bottom Spacer to prevent footer overlap */}
-      <div className="block sm:hidden w-full h-44 pointer-events-none" aria-hidden="true" />
+      <div className="block sm:hidden w-full h-54 pointer-events-none" aria-hidden="true" />
     </main>
   );
 }

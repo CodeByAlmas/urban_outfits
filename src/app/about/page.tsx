@@ -199,6 +199,9 @@ export default function WhoWeArePage() {
 
       </div>
 
+      {/* Mobile-Only Bottom Spacer to prevent footer overlap */}
+      <div className="block sm:hidden w-full h-64 pointer-events-none" aria-hidden="true" />
+
     </main>
   );
 }

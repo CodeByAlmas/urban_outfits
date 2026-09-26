@@ -209,7 +209,7 @@ export default function MenuOverlay({ isOpen, onClose }: MenuOverlayProps) {
               {/* 06. Sale */}
               <motion.div variants={itemVariants} className="flex items-center justify-between relative z-10 max-w-lg group">
                 <Link 
-                  href="/sale" 
+                  href="/shop?category=SALE" 
                   onClick={handleMenuClose}
                   onMouseEnter={() => setSaleText("SALEEE")}
                   onMouseLeave={() => setSaleText("SALE")}
@@ -220,7 +220,7 @@ export default function MenuOverlay({ isOpen, onClose }: MenuOverlayProps) {
                   <span className="text-neutral-400 font-mono-custom text-sm md:text-lg group-hover:text-[#ED3833] transition-colors">]</span>
                 </Link>
                 <Link 
-                  href="/sale" 
+                  href="/shop?category=SALE" 
                   onClick={handleMenuClose}
                   onMouseEnter={() => setSaleText("SALEEE")}
                   onMouseLeave={() => setSaleText("SALE")}

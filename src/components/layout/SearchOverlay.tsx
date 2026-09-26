@@ -1,16 +1,8 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-
-// Sample search results matching reference layout
-const searchProducts = [
-  { id: "01", name: "V-NECK TOP IN NAVY BLUE", price: 3490, category: "TOPS", badge: "NEW SEASON", image: "/film-video.mp4" },
-  { id: "02", name: "SLIMMING BODYSUIT IN BLACK", price: 4290, category: "TOPS", badge: "MOST LOVED", image: "/film-video.mp4" },
-  { id: "03", name: "DRAPED CORSET WITH FANCY PRINT", price: "3,990", category: "TOPS", badge: "", image: "/film-video.mp4" },
-  { id: "04", name: "LONG SLEEPDRESS", price: 5190, category: "SETS", badge: "TIMELESS PIECE", image: "/film-video.mp4" },
-  { id: "05", name: "CORSET BODY IN FREEDOM BLUE", price: 4490, category: "LIMITED EDITION", badge: "", image: "/film-video.mp4" },
-];
+import { getProductsFromSupabase, Product } from '@/data/products';
 
 const categories = [
   { id: "01", name: "ALL" },
@@ -32,6 +24,7 @@ interface SearchOverlayProps {
 }
 
 export default function SearchOverlay({ isOpen, onClose }: SearchOverlayProps) {
+  const [productsList, setProductsList] = useState<Product[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("ALL");
   const [selectedSort, setSelectedSort] = useState("RELEVANCE");
@@ -39,29 +32,37 @@ export default function SearchOverlay({ isOpen, onClose }: SearchOverlayProps) {
   const [gridCols, setGridCols] = useState<3 | 2 | 1>(3);
   const [wishlist, setWishlist] = useState<string[]>([]);
 
+  useEffect(() => {
+    if (isOpen) {
+      getProductsFromSupabase().then(data => {
+        setProductsList(Object.values(data));
+      });
+    }
+  }, [isOpen]);
+
   if (!isOpen) return null;
 
-  const toggleWishlist = (id: string) => {
+  const toggleWishlist = (slug: string) => {
     setWishlist(prev => 
-      prev.includes(id) ? prev.filter(item => item !== id) : [...prev, id]
+      prev.includes(slug) ? prev.filter(item => item !== slug) : [...prev, slug]
     );
   };
 
-  // Filter Logic
-  const filtered = searchProducts.filter(p => {
-    const matchesQuery = p.name.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCat = selectedCategory === "ALL" || p.category === selectedCategory;
+  // Filter Logic based on real product title and category
+  const filtered = productsList.filter(p => {
+    const matchesQuery = p.title?.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesCat = selectedCategory === "ALL" || p.category?.toUpperCase() === selectedCategory.toUpperCase();
     return matchesQuery && matchesCat;
   });
 
   // Sort Logic
   const sortedProducts = [...filtered].sort((a, b) => {
-    const priceA = typeof a.price === 'number' ? a.price : parseInt(a.price.replace(/[^\d]/g, ''));
-    const priceB = typeof b.price === 'number' ? b.price : parseInt(b.price.replace(/[^\d]/g, ''));
+    const priceA = parseInt(a.price?.replace(/[^\d]/g, '') || '0');
+    const priceB = parseInt(b.price?.replace(/[^\d]/g, '') || '0');
 
     if (selectedSort === "PRICE: LOW TO HIGH") return priceA - priceB;
     if (selectedSort === "PRICE: HIGH TO LOW") return priceB - priceA;
-    if (selectedSort === "NAME") return a.name.localeCompare(b.name);
+    if (selectedSort === "NAME") return (a.title || "").localeCompare(b.title || "");
     return 0;
   });
 
@@ -70,19 +71,19 @@ export default function SearchOverlay({ isOpen, onClose }: SearchOverlayProps) {
       
       <div className="w-full bg-black text-white px-6 md:px-12 py-5 flex items-center justify-between sticky top-0 z-50">
         
-        {/* Seamless Search Input Box with reduced elegant font size */}
+        {/* Seamless Search Input Box */}
         <div className="w-full">
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="SEARCH"
+            placeholder="SEARCH PRODUCTS..."
             autoFocus
             className="w-full bg-transparent text-white font-thunder text-2xl sm:text-4xl font-black uppercase tracking-wider outline-none placeholder:text-white"
           />
         </div>
 
-        {/* Close Button (White line removed) */}
+        {/* Close Button */}
         <button 
           onClick={onClose}
           className="text-white hover:text-[#ED3833] transition-colors font-mono-custom text-2xl p-2 cursor-pointer ml-4 flex-shrink-0 z-20"
@@ -154,7 +155,7 @@ export default function SearchOverlay({ isOpen, onClose }: SearchOverlayProps) {
         {/* Layout Grid: Sidebar Categories + Products */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
           
-          {/* Left Sidebar (Popular Products + Numbered Categories) */}
+          {/* Left Sidebar (Numbered Categories) */}
           <div className="lg:col-span-3 flex flex-col justify-between">
             <div>
               <div className="font-mono-custom text-xs tracking-widest text-neutral-500 uppercase mb-2">
@@ -203,21 +204,26 @@ export default function SearchOverlay({ isOpen, onClose }: SearchOverlayProps) {
                 [ NO PRODUCTS FOUND MATCHING YOUR SEARCH ]
               </div>
             ) : (
-              sortedProducts.map((product) => {
-                const isWishlisted = wishlist.includes(product.id);
-                const displayPrice = typeof product.price === 'number' ? `₹ ${product.price.toLocaleString()}` : `₹ ${product.price}`;
+              sortedProducts.map((product, index) => {
+                const isWishlisted = wishlist.includes(product.slug);
+                const displayId = index < 9 ? `0${index + 1}` : `${index + 1}`;
                 return (
-                  <div key={product.id} className="flex flex-col group cursor-pointer bg-[#FFF9F7]">
+                  <Link 
+                    key={product.slug} 
+                    href={`/shop/${product.slug}`}
+                    onClick={onClose}
+                    className="flex flex-col group cursor-pointer bg-[#FFF9F7]"
+                  >
                     
                     {/* Image Box */}
                     <div className="relative w-full h-[380px] bg-neutral-900 overflow-hidden border border-black/20 mb-3">
                       <div className="absolute top-3 left-3 z-10 font-mono-custom text-xs text-white bg-black/60 px-2 py-0.5 tracking-widest">
-                        [ {product.id} ]
+                        [ {displayId} ]
                       </div>
 
                       {/* Wishlist */}
                       <button 
-                        onClick={(e) => { e.stopPropagation(); toggleWishlist(product.id); }}
+                        onClick={(e) => { e.preventDefault(); e.stopPropagation(); toggleWishlist(product.slug); }}
                         className="absolute top-3 right-3 z-10 text-white hover:text-[#ED3833] transition-colors p-1.5"
                       >
                         <svg className={`w-5 h-5 ${isWishlisted ? 'fill-[#ED3833] text-[#ED3833]' : 'fill-transparent stroke-current'}`} viewBox="0 0 24 24" strokeWidth="2">
@@ -225,34 +231,31 @@ export default function SearchOverlay({ isOpen, onClose }: SearchOverlayProps) {
                         </svg>
                       </button>
 
-                      {product.badge && (
-                        <div className="absolute bottom-3 left-3 font-serif italic text-white text-base drop-shadow-md">
-                          {product.badge}
+                      {product.isNewArrival && (
+                        <div className="absolute bottom-3 left-3 font-serif italic text-white text-base drop-shadow-md bg-black/40 px-2 py-0.5">
+                          NEW ARRIVAL
                         </div>
                       )}
 
-                      <video 
-                        src={product.image} 
-                        autoPlay 
-                        loop 
-                        muted 
-                        playsInline 
-                        className="w-full h-full object-cover filter grayscale contrast-125 group-hover:scale-105 transition-transform duration-700"
+                      <img 
+                        src={product.images?.[0] || "/placeholder-1.jpg"} 
+                        alt={product.title} 
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                       />
                     </div>
 
                     {/* Details Bar */}
                     <div className="flex items-start justify-between font-mono-custom text-xs uppercase tracking-widest pt-1 border-t border-black/10">
                       <div>
-                        <div className="font-bold text-black group-hover:text-[#ED3833] transition-colors">{product.name}</div>
-                        <div className="text-neutral-600 mt-0.5">{displayPrice}</div>
+                        <div className="font-bold text-black group-hover:text-[#ED3833] transition-colors">{product.title}</div>
+                        <div className="text-neutral-600 mt-0.5">{product.price}</div>
                       </div>
-                      <button className="font-bold hover:text-[#ED3833] transition-colors pt-0.5 cursor-pointer">
-                        ADD →
-                      </button>
+                      <span className="font-bold hover:text-[#ED3833] transition-colors pt-0.5">
+                        + VIEW
+                      </span>
                     </div>
 
-                  </div>
+                  </Link>
                 );
               })
             )}
@@ -263,7 +266,7 @@ export default function SearchOverlay({ isOpen, onClose }: SearchOverlayProps) {
         {/* Footer Sub-bar */}
         <div className="w-full flex justify-between items-center font-mono-custom text-[10px] uppercase tracking-widest text-neutral-500 pt-12 mt-12 border-t border-black/15">
           <span>— MORE PRODUCTS</span>
-          <span>[ SS '25 ]</span>
+          <span>[ SS '26 ]</span>
         </div>
 
       </div>

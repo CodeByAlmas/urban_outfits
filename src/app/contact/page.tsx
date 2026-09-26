@@ -218,14 +218,14 @@ export default function ContactPage() {
 
             <div className="space-y-1">
               <span className="text-[10px] text-neutral-500 uppercase tracking-widest block">[ INSTAGRAM ]</span>
-              <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="font-bold text-black hover:text-[#ED3833] transition-colors block">
+              <a href="https://instagram.com/urbanoutfits_/" target="_blank" rel="noopener noreferrer" className="font-bold text-black hover:text-[#ED3833] transition-colors block">
                 @urbanoutfits_official
               </a>
             </div>
 
             <div className="space-y-1">
               <span className="text-[10px] text-neutral-500 uppercase tracking-widest block">[ LOCATION ]</span>
-              <span className="font-bold text-black block">New Delhi, India</span>
+              <span className="font-bold text-black block">Kanpur, India</span>
             </div>
 
           </div>
@@ -247,7 +247,11 @@ export default function ContactPage() {
 
       </div>
 
-      <div className="block sm:hidden w-full h-44 pointer-events-none" aria-hidden="true" />
+      {/* Mobile-Only Bottom Spacer */}
+      <div className="block sm:hidden w-full h-64 pointer-events-none" aria-hidden="true" />
+
+      {/* Desktop-Only Bottom Spacer to prevent footer overlap */}
+      <div className="hidden md:block w-full h-16 pointer-events-none" aria-hidden="true" />
 
     </main>
   );

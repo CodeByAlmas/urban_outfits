@@ -21,10 +21,10 @@ export default function Footer() {
   const [faqText, setFaqText] = useState("FAQ");
 
   return (
-    <footer className="relative w-full overflow-hidden select-none -mt-[350px] sm:-mt-[420px] md:-mt-80 z-30 pointer-events-auto">
+    <footer className="relative w-full overflow-hidden select-none -mt-[350px] sm:-mt-[420px] md:-mt-80 z-30 pointer-events-none">
       
       {/* ================= MOBILE RESPONSIVE FOOTER (URBN Logo Protection) ================= */}
-      <div className="block md:hidden relative w-full">
+      <div className="block md:hidden relative w-full pointer-events-auto">
         <img 
           src="/footer-mobile-cutout.png" 
           alt="Footer Mobile Cutout" 
@@ -32,7 +32,7 @@ export default function Footer() {
         />
 
         {/* Absolute Positioning Layer */}
-        <div className="absolute inset-0 max-w-7xl mx-auto w-full px-4 flex flex-col justify-end pb-8 sm:pb-12">
+        <div className="absolute inset-0 max-w-7xl mx-auto w-full px-4 flex flex-col justify-end pb-8 sm:pb-12 pointer-events-auto">
           
           {/* Grid pushed further up to keep left-bottom URBN logo completely clear */}
           <div className="grid grid-cols-2 gap-3 font-mono-custom mb-4 pt-40 sm:pt-52 w-full">
@@ -45,7 +45,7 @@ export default function Footer() {
               </div>
               <ul className="space-y-1 text-[9px] uppercase tracking-wider text-neutral-300">
                 <li>
-                  <Link href="/shop/all" className="inline-block transition-colors hover:text-white" onMouseEnter={() => setAllProdText("All Productsss")} onMouseLeave={() => setAllProdText("All Products")}>
+                  <Link href="/shop" className="inline-block transition-colors hover:text-white" onMouseEnter={() => setAllProdText("All Productsss")} onMouseLeave={() => setAllProdText("All Products")}>
                     {allProdText}
                   </Link>
                 </li>
@@ -55,12 +55,12 @@ export default function Footer() {
                   </Link>
                 </li>
                 <li>
-                  <Link href="/shop/collections" className="inline-block transition-colors hover:text-white" onMouseEnter={() => setColText("Collectionsss")} onMouseLeave={() => setColText("Collections")}>
+                  <Link href="/collections" className="inline-block transition-colors hover:text-white" onMouseEnter={() => setColText("Collectionsss")} onMouseLeave={() => setColText("Collections")}>
                     {colText}
                   </Link>
                 </li>
                 <li>
-                  <Link href="/shop/sale" className="inline-block transition-colors hover:text-white" onMouseEnter={() => setSaleText("Saleee")} onMouseLeave={() => setSaleText("Sale")}>
+                  <Link href="/shop?category=SALE" className="inline-block transition-colors hover:text-white" onMouseEnter={() => setSaleText("Saleee")} onMouseLeave={() => setSaleText("Sale")}>
                     {saleText}
                   </Link>
                 </li>
@@ -161,7 +161,7 @@ export default function Footer() {
       </div>
 
       {/* ================= DESKTOP FOOTER (100% UNTOUCHED) ================= */}
-      <div className="hidden md:block relative w-full">
+      <div className="hidden md:block relative w-full pointer-events-auto">
         <img 
           src="/footer-torn-cutout.png" 
           alt="Footer Torn Paper Cutout" 
@@ -169,7 +169,7 @@ export default function Footer() {
         />
 
         {/* Absolute Positioning Layer */}
-        <div className="absolute inset-0 max-w-7xl mx-auto w-full px-6 md:px-12 flex flex-col justify-end pb-8 md:pb-12">
+        <div className="absolute inset-0 max-w-7xl mx-auto w-full px-6 md:px-12 flex flex-col justify-end pb-8 md:pb-12 pointer-events-auto">
           
           {/* Main Content Grid: Exact position locked */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8 font-mono-custom mb-10 md:mb-14 pt-32 md:pt-40 ml-auto w-full md:w-[68%] lg:w-[62%]">
@@ -213,7 +213,7 @@ export default function Footer() {
                 </li>
                 <li>
                   <Link 
-                    href="/shop/sale" 
+                    href="/shop?category=SALE" 
                     onMouseEnter={() => setSaleText("Saleee")}
                     onMouseLeave={() => setSaleText("Sale")}
                     className="inline-block transition-colors hover:text-[#ED3833]"

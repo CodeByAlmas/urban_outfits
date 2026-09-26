@@ -117,7 +117,7 @@ export default function OurStoryPage() {
               <div className="font-thunder text-2xl uppercase font-bold mt-1">CHECK OUT OUR DROPS</div>
             </div>
             <Link 
-              href="/shop/all"
+              href="/shop"
               className="bg-black text-white px-4 py-3 text-xs uppercase tracking-widest font-bold hover:bg-[#ED3833] transition-colors"
             >
               SHOP →

@@ -303,6 +303,12 @@ export default function PublicationsPage() {
 
       </div>
 
+      {/* Mobile-Only Bottom Spacer to prevent footer overlap */}
+      <div className="block sm:hidden w-full h-64 pointer-events-none" aria-hidden="true" />
+
+      {/* Desktop-Only Bottom Spacer to prevent footer overlap */}
+      <div className="hidden md:block w-full h-42 pointer-events-none" aria-hidden="true" />
+
     </main>
   );
 }
