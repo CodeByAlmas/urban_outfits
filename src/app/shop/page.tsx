@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { getProductsFromSupabase, Product } from '@/data/products';
@@ -9,7 +9,7 @@ const categories = ["ALL", "TOPS", "BOTTOMS", "OUTERWEAR", "SETS", "ACCESSORIES"
 const sizesList = ["ALL", "S", "M", "L", "XL", "28", "30", "32", "34", "ONE SIZE"];
 const sortOptions = ["BEST SELLING", "PRICE: LOW TO HIGH", "PRICE: HIGH TO LOW", "NEWEST"];
 
-export default function ShopAllPage() {
+function ShopContent() {
   const searchParams = useSearchParams();
   const urlCategory = searchParams.get('category');
 
@@ -265,5 +265,13 @@ export default function ShopAllPage() {
       <div className="block sm:hidden w-full h-64 pointer-events-none" aria-hidden="true" />
 
     </main>
+  );
+}
+
+export default function ShopAllPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-[#FFF9F7] flex items-center justify-center font-mono-custom text-xs uppercase tracking-widest">[ LOADING SHOP... ]</div>}>
+      <ShopContent />
+    </Suspense>
   );
 }
