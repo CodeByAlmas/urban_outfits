@@ -25,7 +25,7 @@ export interface Product {
   delivery: string;
   images: string[];
   colors: ColorVariant[];
-  sizes: string[];
+  sizes: Record<string, number>; // Size key (e.g. "28", "S") -> stock quantity (0 means sold out)
   inStock: boolean;
 }
 
@@ -94,8 +94,18 @@ export async function getProductsFromSupabase(): Promise<Record<string, Product>
       .single();
 
     if (!error && data && data.content) {
-      localStorage.setItem('urbn_products_cache', JSON.stringify(data.content));
-      return data.content;
+      const parsedData = data.content;
+      // Backward compatibility migration for legacy array sizes
+      Object.keys(parsedData).forEach(slug => {
+        if (Array.isArray((parsedData[slug] as any).sizes)) {
+          const oldSizes: string[] = (parsedData[slug] as any).sizes;
+          const newSizesObj: Record<string, number> = {};
+          oldSizes.forEach(sz => { newSizesObj[sz] = 10; });
+          parsedData[slug].sizes = newSizesObj;
+        }
+      });
+      localStorage.setItem('urbn_products_cache', JSON.stringify(parsedData));
+      return parsedData;
     }
   } catch (err) {
     console.warn('Cloud fetch warning, using local cache:', err);
@@ -130,7 +140,18 @@ export function getProducts(): Record<string, Product> {
   if (typeof window === 'undefined') return {};
   const saved = localStorage.getItem('urbn_products_cache');
   if (saved) {
-    try { return JSON.parse(saved); } catch (e) { return {}; }
+    try { 
+      const parsed = JSON.parse(saved);
+      Object.keys(parsed).forEach(slug => {
+        if (Array.isArray(parsed[slug].sizes)) {
+          const old = parsed[slug].sizes;
+          const obj: Record<string, number> = {};
+          old.forEach((sz: string) => { obj[sz] = 10; });
+          parsed[slug].sizes = obj;
+        }
+      });
+      return parsed; 
+    } catch (e) { return {}; }
   }
   return {};
 }

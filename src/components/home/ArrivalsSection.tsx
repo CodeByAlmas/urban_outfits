@@ -93,7 +93,7 @@ export default function ArrivalsSection() {
 
                   <CardItem translateZ="100" className="w-full h-full">
                     <img 
-                      src={featuredProduct.images?.[0] || "/hero-model.png"} 
+                      src={featuredProduct.images?.[0] || featuredProduct.colors?.[0]?.images?.[0] || "/hero-model.png"} 
                       alt={featuredProduct.title} 
                       className="w-full h-full object-cover opacity-90 group-hover/card:scale-105 transition-transform duration-700"
                     />
@@ -121,23 +121,26 @@ export default function ArrivalsSection() {
         {/* Right Column: 2x2 Grid of Smaller Products (Desktop) */}
         <div className="hidden lg:grid lg:col-span-4 grid-cols-2 gap-4 w-full">
           {gridProducts.length > 0 ? (
-            gridProducts.map((product) => (
-              <Link key={product.slug} href={`/shop/${product.slug}`} className="group/card block">
-                <div className="w-full h-[170px] bg-neutral-200 overflow-hidden relative transition-transform duration-300 group-hover/card:-translate-y-1 shadow-sm">
-                  <img src={product.images?.[0] || "/hero-model.png"} alt={product.title} className="w-full h-full object-cover group-hover/card:scale-105 transition-transform duration-500" />
-                </div>
-                <div className="mt-2 flex justify-between items-center w-full">
-                  <div>
-                    <h5 className="font-thunder text-xs tracking-wider uppercase font-bold">{product.title}</h5>
-                    <p className="font-mono-custom text-[10px] text-neutral-600">{product.price}</p>
+            gridProducts.map((product) => {
+              const cardImg = product.images?.[0] || product.colors?.[0]?.images?.[0] || "/hero-model.png";
+              return (
+                <Link key={product.slug} href={`/shop/${product.slug}`} className="group/card block">
+                  <div className="w-full h-[170px] bg-neutral-200 overflow-hidden relative transition-transform duration-300 group-hover/card:-translate-y-1 shadow-sm">
+                    <img src={cardImg} alt={product.title} className="w-full h-full object-cover group-hover/card:scale-105 transition-transform duration-500" />
                   </div>
-                  <div className="flex items-center gap-2 text-xs text-neutral-800 font-mono-custom">
-                    <span className="w-6 h-[1px] bg-black"></span>
-                    <span className="group-hover/card:translate-x-1 transition-transform">&rarr;</span>
+                  <div className="mt-2 flex justify-between items-center w-full">
+                    <div>
+                      <h5 className="font-thunder text-xs tracking-wider uppercase font-bold">{product.title}</h5>
+                      <p className="font-mono-custom text-[10px] text-neutral-600">{product.price}</p>
+                    </div>
+                    <div className="flex items-center gap-2 text-xs text-neutral-800 font-mono-custom">
+                      <span className="w-6 h-[1px] bg-black"></span>
+                      <span className="group-hover/card:translate-x-1 transition-transform">&rarr;</span>
+                    </div>
                   </div>
-                </div>
-              </Link>
-            ))
+                </Link>
+              );
+            })
           ) : (
             <div className="col-span-2 py-16 text-center font-mono-custom text-[10px] uppercase text-neutral-400 border border-black/10">
               [ MORE ARRIVALS WILL APPEAR HERE ]
@@ -154,18 +157,21 @@ export default function ArrivalsSection() {
             className="w-full overflow-x-auto flex gap-4 pb-2 pt-2 no-scrollbar snap-x snap-mandatory"
           >
             {newArrivals.length > 0 ? (
-              newArrivals.map((product) => (
-                <Link key={product.slug} href={`/shop/${product.slug}`} className="shrink-0 w-[240px] snap-center block bg-neutral-900 text-white relative overflow-hidden shadow-md">
-                  <div className="absolute top-2 left-2 z-20 px-2 py-0.5 bg-black text-white font-mono-custom text-[8px] uppercase tracking-widest">NEW</div>
-                  <div className="w-full h-[260px] relative">
-                    <img src={product.images?.[0] || "/hero-model.png"} alt={product.title} className="w-full h-full object-cover opacity-90" />
-                  </div>
-                  <div className="p-3 bg-neutral-900">
-                    <h4 className="font-thunder text-lg tracking-wider uppercase font-bold">{product.title}</h4>
-                    <p className="font-mono-custom text-[10px] tracking-widest text-neutral-300">{product.price}</p>
-                  </div>
-                </Link>
-              ))
+              newArrivals.map((product) => {
+                const mobImg = product.images?.[0] || product.colors?.[0]?.images?.[0] || "/hero-model.png";
+                return (
+                  <Link key={product.slug} href={`/shop/${product.slug}`} className="shrink-0 w-[240px] snap-center block bg-neutral-900 text-white relative overflow-hidden shadow-md">
+                    <div className="absolute top-2 left-2 z-20 px-2 py-0.5 bg-black text-white font-mono-custom text-[8px] uppercase tracking-widest">NEW</div>
+                    <div className="w-full h-[260px] relative">
+                      <img src={mobImg} alt={product.title} className="w-full h-full object-cover opacity-90" />
+                    </div>
+                    <div className="p-3 bg-neutral-900">
+                      <h4 className="font-thunder text-lg tracking-wider uppercase font-bold">{product.title}</h4>
+                      <p className="font-mono-custom text-[10px] tracking-widest text-neutral-300">{product.price}</p>
+                    </div>
+                  </Link>
+                );
+              })
             ) : (
               <div className="w-full py-12 text-center font-mono-custom text-xs text-neutral-400">
                 [ NO NEW ARRIVALS FOUND ]

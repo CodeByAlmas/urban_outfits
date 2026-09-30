@@ -2,6 +2,11 @@
 
 import React, { useState, useEffect } from 'react';
 import { getProductsFromSupabase, saveProductsToSupabase, uploadMediaToSupabaseStorage, deleteMediaFromSupabaseStorage, Product, ColorVariant } from '@/data/products';
+import { createClient } from '@supabase/supabase-js';
+
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co';
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder-key';
+const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 export default function AdminPanel() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -22,7 +27,6 @@ export default function AdminPanel() {
   const [maintenanceMode, setMaintenanceMode] = useState(false);
   const [uploadingState, setUploadingState] = useState<string | null>(null);
 
-  // Custom Theme Popup Modal State
   const [modalOpen, setModalOpen] = useState(false);
   const [modalTitle, setModalTitle] = useState('SYSTEM NOTICE');
   const [modalMessage, setModalMessage] = useState('');
@@ -40,7 +44,7 @@ export default function AdminPanel() {
     categoryBannerImage: "/placeholder-1.jpg",
     announcementText: "⚡ FLASH DROP: FREE SHIPPING PAN-INDIA ON ORDERS ABOVE ₹2,999",
     announcementBgColor: "#ED3833",
-    saleModeActive: true,
+    saleModeActive: false,
     legalTerms: "Welcome to URBN (urbn.studio)...",
     shippingInfo: "Standard express shipping across India..."
   });
@@ -57,9 +61,9 @@ export default function AdminPanel() {
     details: '',
     care: '',
     delivery: '',
-    images: ['/placeholder-1.jpg'],
+    images: [''], // Blank default instead of placeholder-1.jpg
     colors: [], 
-    sizes: ['28', '30', '32', '34'],
+    sizes: { '28': 10, '30': 10, '32': 10, '34': 10 },
     inStock: true
   });
 
@@ -79,10 +83,22 @@ export default function AdminPanel() {
     if (savedPin) setAdminSecretPin(savedPin);
     if (savedMaint) setMaintenanceMode(savedMaint === 'true');
 
-    const savedCms = localStorage.getItem('urbn_site_cms');
-    if (savedCms) {
-      try { setSiteContent(JSON.parse(savedCms)); } catch(e) {}
-    }
+    supabase
+      .from('products')
+      .select('*')
+      .eq('slug', 'urbn_cms_settings_meta')
+      .then(({ data, error }) => {
+        if (!error && data && data.length > 0 && data[0].description) {
+          try {
+            const cloudCms = JSON.parse(data[0].description);
+            setSiteContent(prev => ({
+              ...prev,
+              ...cloudCms,
+              saleModeActive: cloudCms.saleModeActive ?? false
+            }));
+          } catch(e) {}
+        }
+      });
 
     const savedOrders = localStorage.getItem('urbn_cart');
     if (savedOrders) {
@@ -138,7 +154,6 @@ export default function AdminPanel() {
     }
   };
 
-  // Helper to reassign ascending issue numbers across products
   const reassignIssueNumbers = (prodMap: Record<string, Product>): Record<string, Product> => {
     const sortedEntries = Object.entries(prodMap);
     const updatedMap: Record<string, Product> = {};
@@ -159,7 +174,6 @@ export default function AdminPanel() {
       return;
     }
     
-    // Check New Arrival limit (Max 5)
     if (formData.isNewArrival) {
       const currentNewArrivalsCount = Object.values(products).filter(p => p.isNewArrival && p.slug !== isEditing).length;
       if (currentNewArrivalsCount >= 5) {
@@ -172,9 +186,19 @@ export default function AdminPanel() {
       ? formData.slug 
       : `${formData.title.toLowerCase().replace(/[^a-z0-9]+/g, '-')}-${Date.now().toString().slice(-6)}`;
 
-    // Filter out empty general image fields if color variants are present
     const cleanedImages = formData.images.filter(img => img && img.trim() !== '');
-    const finalImages = cleanedImages.length > 0 ? cleanedImages : (formData.colors.length > 0 ? [] : ['/placeholder-1.jpg']);
+    
+    let finalImages = cleanedImages;
+    if (finalImages.length === 0 && formData.colors.length > 0) {
+      const firstColorImg = formData.colors[0]?.images?.find(img => img && img.trim() !== '');
+      if (firstColorImg) {
+        finalImages = [firstColorImg];
+      } else {
+        finalImages = ['/placeholder-1.jpg'];
+      }
+    } else if (finalImages.length === 0) {
+      finalImages = ['/placeholder-1.jpg'];
+    }
 
     const finalProduct: Product = {
       ...formData,
@@ -197,10 +221,29 @@ export default function AdminPanel() {
     }
   };
 
-  const handleSaveCms = (e: React.FormEvent) => {
+  const handleSaveCms = async (e: React.FormEvent) => {
     e.preventDefault();
-    localStorage.setItem('urbn_site_cms', JSON.stringify(siteContent));
-    showCustomAlert("CMS SYNC", "SUCCESS: HOMEPAGE, CMS & SALE TICKER UPDATED");
+    const cmsPayload = {
+      slug: 'urbn_cms_settings_meta',
+      title: 'URBN CMS SETTINGS',
+      price: '₹ 0',
+      category: 'CMS',
+      issue: 'CMS',
+      description: JSON.stringify(siteContent),
+      images: ['/placeholder-1.jpg'],
+      sizes: { 'ONE SIZE': 10 },
+      inStock: true
+    };
+
+    const { error } = await supabase
+      .from('products')
+      .upsert(cmsPayload, { onConflict: 'slug' });
+
+    if (!error) {
+      showCustomAlert("CMS CLOUD SYNC", "SUCCESS: HOMEPAGE, CMS & SALE CONTROLS SYNCED TO SUPABASE CLOUD");
+    } else {
+      showCustomAlert("CMS SYNC ERROR", "FAILED TO SYNC WITH SUPABASE CLOUD");
+    }
   };
 
   const handleToggleMaintenance = () => {
@@ -271,9 +314,9 @@ export default function AdminPanel() {
       details: '',
       care: '',
       delivery: '',
-      images: ['/placeholder-1.jpg'],
+      images: [''], // Blank default for new product
       colors: [],
-      sizes: ['28', '30', '32', '34'],
+      sizes: { '28': 10, '30': 10, '32': 10, '34': 10 },
       inStock: true
     });
     setIsEditing('new');
@@ -359,16 +402,32 @@ export default function AdminPanel() {
     setFormData({ ...formData, colors: newColors });
   };
 
-  const handleSizeStringChange = (val: string) => {
-    const sizesArray = val.split(',').map(s => s.trim()).filter(Boolean);
-    setFormData({ ...formData, sizes: sizesArray });
+  const handleAdminSizeToggle = (sz: string) => {
+    const newSizes = { ...(formData.sizes || {}) };
+    if (newSizes[sz] !== undefined) {
+      delete newSizes[sz];
+    } else {
+      newSizes[sz] = 10;
+    }
+    setFormData({ ...formData, sizes: newSizes });
+  };
+
+  const handleToggleSizeSoldOut = (sz: string) => {
+    const newSizes = { ...(formData.sizes || {}) };
+    const currentQty = newSizes[sz] ?? 0;
+    newSizes[sz] = currentQty > 0 ? 0 : 10;
+    setFormData({ ...formData, sizes: newSizes });
+  };
+
+  const handleSizeQtyChange = (sz: string, qty: number) => {
+    const newSizes = { ...(formData.sizes || {}) };
+    newSizes[sz] = Math.max(0, qty);
+    setFormData({ ...formData, sizes: newSizes });
   };
 
   if (viewMode === 'login' && !isAuthenticated) {
     return (
       <div className="min-h-screen bg-[#FFF9F7] text-black font-mono-custom flex items-center justify-center p-4">
-        
-        {/* Custom Theme Popup Modal */}
         {modalOpen && (
           <div className="fixed inset-0 z-[99999] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
             <div className="bg-white border-2 border-black p-8 max-w-md w-full shadow-2xl space-y-4 text-center">
@@ -412,8 +471,6 @@ export default function AdminPanel() {
   if (viewMode === 'forgot' && !isAuthenticated) {
     return (
       <div className="min-h-screen bg-[#FFF9F7] text-black font-mono-custom flex items-center justify-center p-4">
-        
-        {/* Custom Theme Popup Modal */}
         {modalOpen && (
           <div className="fixed inset-0 z-[99999] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
             <div className="bg-white border-2 border-black p-8 max-w-md w-full shadow-2xl space-y-4 text-center">
@@ -454,7 +511,6 @@ export default function AdminPanel() {
   return (
     <div className="min-h-screen bg-[#FFF9F7] text-black font-mono-custom p-4 sm:p-6 md:p-12 select-none">
       
-      {/* Custom Theme Popup Modal */}
       {modalOpen && (
         <div className="fixed inset-0 z-[99999] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-white border-2 border-black p-8 max-w-md w-full shadow-2xl space-y-4 text-center">
@@ -475,7 +531,6 @@ export default function AdminPanel() {
 
       <div className="max-w-7xl mx-auto">
         
-        {/* Header */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b-2 border-black pb-6 mb-8 gap-4">
           <div>
             <span className="text-[10px] uppercase tracking-widest text-[#ED3833] font-bold">[ SUPABASE CLOUD DATABASE // ACTIVE ]</span>
@@ -489,7 +544,6 @@ export default function AdminPanel() {
           </div>
         </div>
 
-        {/* Navigation Tabs */}
         <div className="flex flex-wrap gap-2 sm:gap-3 mb-8 border-b border-black/20 pb-4 overflow-x-auto">
           <button onClick={() => setActiveTab('overview')} className={`px-4 sm:px-5 py-2.5 text-xs uppercase font-bold cursor-pointer whitespace-nowrap ${activeTab === 'overview' ? 'bg-black text-white' : 'bg-white border'}`}>[ 01. OVERVIEW ]</button>
           <button onClick={() => setActiveTab('products')} className={`px-4 sm:px-5 py-2.5 text-xs uppercase font-bold cursor-pointer whitespace-nowrap ${activeTab === 'products' ? 'bg-black text-white' : 'bg-white border'}`}>[ 02. INVENTORY ]</button>
@@ -533,12 +587,12 @@ export default function AdminPanel() {
 
                   <div className="space-y-1">
                     <label className="font-bold">Product Title / Name:</label>
-                    <input type="text" value={formData.title} onChange={(e) => setFormData({...formData, title: e.target.value})} placeholder="E.G. TECHWEAR JACKET" className="w-full bg-neutral-100 border p-2.5 uppercase font-bold" required />
+                    <input type="text" value={formData.title} onChange={(e) => setFormData({...formData, title: e.target.value})} className="w-full bg-neutral-100 border p-2.5 uppercase font-bold" required />
                   </div>
 
                   <div className="space-y-1">
                     <label className="font-bold">Price:</label>
-                    <input type="text" value={formData.price} onChange={(e) => setFormData({...formData, price: e.target.value})} placeholder="₹ 4,990" className="w-full bg-neutral-100 border p-2.5 uppercase" required />
+                    <input type="text" value={formData.price} onChange={(e) => setFormData({...formData, price: e.target.value})} className="w-full bg-neutral-100 border p-2.5 uppercase" required />
                   </div>
 
                   <div className="space-y-1">
@@ -555,7 +609,7 @@ export default function AdminPanel() {
 
                   <div className="space-y-1">
                     <label className="font-bold">Sub-Category (e.g. BOOT CUT JEANS, BAGGY):</label>
-                    <input type="text" value={formData.subCategory} onChange={(e) => setFormData({...formData, subCategory: e.target.value})} placeholder="BOOT CUT JEANS" className="w-full bg-neutral-100 border p-2.5 uppercase font-bold" />
+                    <input type="text" value={formData.subCategory} onChange={(e) => setFormData({...formData, subCategory: e.target.value})} className="w-full bg-neutral-100 border p-2.5 uppercase font-bold" />
                   </div>
 
                   <div className="space-y-1 flex items-center gap-3 pt-4">
@@ -569,17 +623,62 @@ export default function AdminPanel() {
                     <label htmlFor="newArrivalToggle" className="font-bold cursor-pointer">Show in New Arrivals / Homepage (Max 5)</label>
                   </div>
 
-                  {/* Sizes Manager */}
-                  <div className="md:col-span-2 space-y-1">
-                    <label className="font-bold">Size Variants (Comma Separated e.g. 28, 30, 32, 34 or S, M, L):</label>
-                    <input 
-                      type="text" 
-                      value={formData.sizes.join(', ')} 
-                      onChange={(e) => handleSizeStringChange(e.target.value)} 
-                      placeholder="28, 30, 32, 34" 
-                      className="w-full bg-neutral-100 border p-2.5 uppercase font-bold" 
-                      required 
-                    />
+                  {/* Per-Size Sold-Out & Stock Manager */}
+                  <div className="md:col-span-2 space-y-3 border-t border-black/20 pt-4">
+                    <label className="font-bold block">Per-Size Stock & Sold-Out Control:</label>
+                    <p className="text-[10px] text-neutral-500">Toggle active sizes, set custom quantities, or instantly mark any specific size as SOLD OUT from here.</p>
+                    
+                    <div className="flex flex-wrap gap-2 mb-3">
+                      {["28", "30", "32", "34", "36", "S", "M", "L", "XL", "XXL", "ONE SIZE"].map(sz => {
+                        const isEnabled = formData.sizes && formData.sizes[sz] !== undefined;
+                        return (
+                          <button
+                            key={sz}
+                            type="button"
+                            onClick={() => handleAdminSizeToggle(sz)}
+                            className={`px-3 py-1.5 border text-xs font-bold cursor-pointer transition-colors ${
+                              isEnabled ? 'bg-black text-white border-black' : 'bg-white text-neutral-600 border-black/30 hover:border-black'
+                            }`}
+                          >
+                            {sz} {isEnabled ? '✓ Active' : '+ Add'}
+                          </button>
+                        );
+                      })}
+                    </div>
+
+                    {formData.sizes && Object.keys(formData.sizes).length > 0 && (
+                      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 bg-neutral-100 p-4 border border-black/20">
+                        {Object.entries(formData.sizes).map(([sz, qty]) => {
+                          const isSoldOut = (qty as number) <= 0;
+                          return (
+                            <div key={sz} className="flex flex-col gap-2 bg-white p-3 border border-black/10">
+                              <div className="flex items-center justify-between">
+                                <span className="font-bold text-xs">[ {sz} ]</span>
+                                <button
+                                  type="button"
+                                  onClick={() => handleToggleSizeSoldOut(sz)}
+                                  className={`px-2 py-1 text-[9px] font-bold uppercase transition-colors cursor-pointer ${
+                                    isSoldOut ? 'bg-red-600 text-white' : 'bg-green-100 text-green-800 hover:bg-red-100 hover:text-red-800'
+                                  }`}
+                                >
+                                  {isSoldOut ? '● SOLD OUT' : '○ AVAILABLE'}
+                                </button>
+                              </div>
+                              <div className="flex items-center justify-between pt-1 border-t border-neutral-100">
+                                <span className="text-[10px] text-neutral-500">Stock Qty:</span>
+                                <input 
+                                  type="number" 
+                                  min="0"
+                                  value={qty} 
+                                  onChange={(e) => handleSizeQtyChange(sz, parseInt(e.target.value) || 0)} 
+                                  className="w-16 bg-neutral-100 border p-1 text-center font-bold text-xs" 
+                                />
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
                   </div>
 
                   {/* Optional Color Variants Manager */}
@@ -588,7 +687,6 @@ export default function AdminPanel() {
                       <label className="font-bold block text-sm">Color Variants (Optional):</label>
                       <button type="button" onClick={handleAddColor} className="w-full sm:w-auto text-[10px] bg-black text-white px-4 py-2 uppercase font-bold hover:bg-[#ED3833] cursor-pointer">+ Add Color Variant</button>
                     </div>
-                    <p className="text-[10px] text-neutral-500">By default no colors are selected. Add only if this article has distinct color choices.</p>
                     
                     {formData.colors.map((colorItem, colorIdx) => (
                       <div key={colorIdx} className="bg-neutral-100 p-4 border border-black/20 space-y-3">
@@ -613,7 +711,6 @@ export default function AdminPanel() {
                           <button type="button" onClick={() => handleRemoveColor(colorIdx)} className="bg-red-600 text-white px-3 py-2 text-xs font-bold cursor-pointer">DELETE COLOR</button>
                         </div>
 
-                        {/* Multiple Images for this Color */}
                         <div className="space-y-2 pl-2 sm:pl-4 border-l-2 border-black/20">
                           <label className="text-[11px] font-bold block text-neutral-700">Photos for {colorItem.name || 'this color'}:</label>
                           {colorItem.images.map((imgSrc, imgIdx) => (
@@ -641,7 +738,6 @@ export default function AdminPanel() {
                     ))}
                   </div>
 
-                  {/* General Product Media (Optional if color variants exist) */}
                   <div className="md:col-span-2 space-y-2 border-t border-black/20 pt-4">
                     <label className="font-bold block">General Product Media (Optional if Color Variants provided):</label>
                     {formData.images.map((imgUrl, idx) => (
@@ -661,7 +757,6 @@ export default function AdminPanel() {
                     <button type="button" onClick={handleAddImageField} className="text-[10px] bg-black text-white px-4 py-2 uppercase font-bold hover:bg-[#ED3833] cursor-pointer">+ Add General Image Field</button>
                   </div>
 
-                  {/* Description, Details, Care, Delivery */}
                   <div className="md:col-span-2 space-y-4 border-t border-black/20 pt-4">
                     <div className="space-y-1">
                       <label className="font-bold">Description:</label>

@@ -16,7 +16,6 @@ export default function GlobalProductPage() {
   const [selectedColor, setSelectedColor] = useState("");
   const [isWishlisted, setIsWishlisted] = useState(false);
   
-  // Custom catalog popup modal state instead of default alert
   const [showModal, setShowModal] = useState(false);
   const [modalMessage, setModalMessage] = useState('');
   
@@ -28,9 +27,13 @@ export default function GlobalProductPage() {
       const currProduct = allProducts[slug];
       if (currProduct) {
         setProduct(currProduct);
-        setSelectedSize(currProduct.sizes?.[0] || "S");
         
-        // Handle default color only if colors exist
+        // Find first available size with stock > 0
+        const sizesMap = currProduct.sizes || {};
+        const availableSizes = Object.entries(sizesMap).filter(([_, qty]) => (qty as number) > 0);
+        const defaultSz = availableSizes.length > 0 ? availableSizes[0][0] : (Object.keys(sizesMap)[0] || "S");
+        setSelectedSize(defaultSz);
+        
         if (currProduct.colors && currProduct.colors.length > 0) {
           const defaultColor = currProduct.colors[0].name || "";
           setSelectedColor(defaultColor);
@@ -38,7 +41,6 @@ export default function GlobalProductPage() {
           setSelectedColor("");
         }
         
-        // Load default color's images or general images
         const initialImgs = currProduct.colors?.[0]?.images?.length > 0 
           ? currProduct.colors[0].images 
           : (currProduct.images?.length > 0 ? currProduct.images : ['/placeholder-1.jpg']);
@@ -49,7 +51,6 @@ export default function GlobalProductPage() {
     });
   }, [slug]);
 
-  // When color changes, switch gallery photos to that color's specific photoshoot images
   const handleColorSelect = (colorName: string, colorImages?: string[]) => {
     setSelectedColor(colorName);
     if (colorImages && colorImages.length > 0) {
@@ -75,11 +76,17 @@ export default function GlobalProductPage() {
       return;
     }
     
+    const sizesMap = product.sizes || {};
+    const currentQty = sizesMap[selectedSize] ?? 0;
+    if (currentQty <= 0) {
+      alert(`[ SORRY, SIZE ${selectedSize} IS CURRENTLY SOLD OUT. ]`);
+      return;
+    }
+
     const existingCart = JSON.parse(localStorage.getItem('urbn_cart') || '[]');
     existingCart.push({ title: product.title, price: product.price, size: selectedSize, color: selectedColor || 'N/A' });
     localStorage.setItem('urbn_cart', JSON.stringify(existingCart));
 
-    // Display theme-matched popup message box instead of raw alert
     setModalMessage(`[ CATALOG MODE: "${product.title}" (SIZE: ${selectedSize}${selectedColor ? `, COLOR: ${selectedColor}` : ''}) ADDED TO INQUIRY BAG. ONLINE CHECKOUT COMING SOON! ]`);
     setShowModal(true);
   };
@@ -93,7 +100,6 @@ export default function GlobalProductPage() {
   return (
     <main className="min-h-screen bg-[#FFF9F7] text-black font-mono-custom selection:bg-black selection:text-white pt-24 md:pt-32 overflow-x-hidden relative">
       
-      {/* Custom Theme Popup Modal for Add to Cart */}
       {showModal && (
         <div className="fixed inset-0 z-[99999] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-white border-2 border-black p-8 max-w-md w-full shadow-2xl space-y-4 text-center">
@@ -112,15 +118,12 @@ export default function GlobalProductPage() {
         </div>
       )}
 
-      {/* Breadcrumbs */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-12 py-4 text-[10px] sm:text-xs uppercase tracking-widest text-neutral-500">
         <Link href="/" className="hover:text-black transition-colors">[ HOME ]</Link> / <Link href="/shop" className="hover:text-black transition-colors">[ SHOP ]</Link> / <span className="text-black font-bold break-all">[ {product.title} ]</span>
       </div>
 
-      {/* Main Product Section */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 md:px-12 grid grid-cols-1 lg:grid-cols-12 gap-8 md:gap-12 pb-16">
         
-        {/* Left: Gallery */}
         <div className="lg:col-span-7 flex flex-col-reverse sm:flex-row gap-4">
           <div className="flex sm:flex-col gap-3 overflow-x-auto sm:overflow-visible pb-2 sm:pb-0 no-scrollbar">
             {activeGalleryImages.map((imgSrc, idx) => (
@@ -141,7 +144,6 @@ export default function GlobalProductPage() {
           </div>
         </div>
 
-        {/* Right: Details & Actions */}
         <div className="lg:col-span-5 flex flex-col justify-start space-y-6 w-full overflow-hidden">
           <div>
             <span className="text-xs uppercase tracking-[0.2em] text-[#ED3833] font-bold">[ {product.issue || 'ISSUE 01'} ]</span>
@@ -161,7 +163,7 @@ export default function GlobalProductPage() {
             </div>
           </div>
 
-          {/* Size Selection */}
+          {/* Size Selection with Sold-Out Status */}
           <div className="space-y-2">
             <div className="flex justify-between items-center text-xs uppercase tracking-widest">
               <span className="font-bold">[ SELECT SIZE ]</span>
@@ -170,21 +172,33 @@ export default function GlobalProductPage() {
               </button>
             </div>
             <div className="grid grid-cols-4 gap-2">
-              {product.sizes && product.sizes.map((size) => (
-                <button
-                  key={size}
-                  onClick={() => setSelectedSize(size)}
-                  className={`py-3 text-xs font-mono-custom tracking-widest uppercase border transition-all cursor-pointer hover:border-black ${
-                    selectedSize === size ? 'bg-black text-white border-black font-bold shadow-sm' : 'bg-transparent border-black/30 text-neutral-800'
-                  }`}
-                >
-                  [ {size} ]
-                </button>
-              ))}
+              {product.sizes && Object.entries(product.sizes).map(([size, qty]) => {
+                const isSoldOut = (qty as number) <= 0;
+                const isSelected = selectedSize === size;
+                return (
+                  <button
+                    key={size}
+                    type="button"
+                    disabled={isSoldOut}
+                    onClick={() => !isSoldOut && setSelectedSize(size)}
+                    className={`py-3 px-1 text-[11px] sm:text-xs font-mono-custom tracking-widest uppercase border transition-all flex flex-col items-center justify-center ${
+                      isSoldOut 
+                        ? 'bg-neutral-200 text-neutral-400 border-neutral-300 cursor-not-allowed line-through' 
+                        : isSelected 
+                          ? 'bg-black text-white border-black font-bold shadow-sm cursor-pointer' 
+                          : 'bg-transparent border-black/30 text-neutral-800 hover:border-black cursor-pointer'
+                    }`}
+                  >
+                    <span>[ {size} ]</span>
+                    <span className="text-[9px] mt-0.5 tracking-normal opacity-80">
+                      {isSoldOut ? 'SOLD OUT' : 'AVAILABLE'}
+                    </span>
+                  </button>
+                );
+              })}
             </div>
           </div>
 
-          {/* Color Selection (Rendered ONLY IF product.colors exists and has items) */}
           {product.colors && product.colors.length > 0 && (
             <div className="space-y-2 py-2 px-1">
               <span className="text-xs uppercase tracking-widest font-bold">[ SELECT COLOR: <span className="text-neutral-600 font-normal">{selectedColor}</span> ]</span>
@@ -203,7 +217,6 @@ export default function GlobalProductPage() {
             </div>
           )}
 
-          {/* Action Buttons */}
           <div className="space-y-3 pt-2">
             <div className="flex gap-3">
               <button 
@@ -237,7 +250,6 @@ export default function GlobalProductPage() {
             </button>
           </div>
 
-          {/* Accordions */}
           <div className="border-t border-black/10 divide-y divide-black/10 pt-4">
             <div className="py-3">
               <button onClick={() => toggleAccordion(1)} className="w-full flex justify-between items-center text-xs uppercase tracking-widest font-bold cursor-pointer hover:text-[#ED3833] transition-colors">
@@ -267,13 +279,9 @@ export default function GlobalProductPage() {
         </div>
       </section>
 
-      {/* Desktop spacing */}
       <div className="w-full h-44 sm:h-56 pointer-events-none" aria-hidden="true" />
-
-      {/* Mobile-Only Bottom Spacer to prevent footer overlap */}
       <div className="block sm:hidden w-full h-44 pointer-events-none" aria-hidden="true" />
 
-      {/* Size Guide Drawer */}
       {isSizeGuideOpen && (
         <div className="fixed inset-0 z-50 flex justify-end bg-black/50 backdrop-blur-xs transition-opacity">
           <div className="w-full max-w-md bg-[#FFF9F7] h-full p-6 sm:p-8 flex flex-col shadow-2xl overflow-y-auto">

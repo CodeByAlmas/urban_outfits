@@ -65,7 +65,14 @@ function ShopContent() {
 
   // 3. Filter by Size
   if (selectedSize !== "ALL") {
-    filtered = filtered.filter(p => p.sizes?.includes(selectedSize));
+    filtered = filtered.filter(p => {
+      if (Array.isArray(p.sizes)) {
+        return p.sizes.includes(selectedSize);
+      } else if (p.sizes && typeof p.sizes === 'object') {
+        return Object.keys(p.sizes).includes(selectedSize);
+      }
+      return false;
+    });
   }
 
   // 4. Sort Logic
@@ -220,6 +227,12 @@ function ShopContent() {
           sortedProducts.map((product, index) => {
             const isWishlisted = wishlist.includes(product.slug);
             const displayId = index < 9 ? `0${index + 1}` : `${index + 1}`;
+            
+            // Auto fallback image resolution from general images or color variant images
+            const fallbackImg = product.images?.[0] || 
+              (product.colors?.[0]?.images?.[0]) || 
+              "/placeholder-1.jpg";
+
             return (
               <Link 
                 key={product.slug} 
@@ -239,7 +252,7 @@ function ShopContent() {
                     </svg>
                   </button>
                   <img 
-                    src={product.images?.[0] || "/placeholder-1.jpg"} 
+                    src={fallbackImg} 
                     alt={product.title} 
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                   />
