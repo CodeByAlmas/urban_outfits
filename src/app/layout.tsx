@@ -8,6 +8,11 @@ import Footer from "@/components/layout/Footer";
 import FloatingActions from "@/components/FloatingActions";
 import StairsPreloader from "@/components/StairsPreloader";
 import SEOHead from "@/components/SEOHead";
+import { createClient } from '@supabase/supabase-js';
+
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
+const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 export default function RootLayout({
   children,
@@ -18,34 +23,35 @@ export default function RootLayout({
   const isAdminRoute = pathname?.startsWith('/admin');
 
   const [maintenanceMode, setMaintenanceMode] = useState(false);
-  const [saleActive, setSaleActive] = useState(true);
+  const [saleActive, setSaleActive] = useState(false);
   const [saleText, setSaleText] = useState("⚡ FLASH DROP: FREE SHIPPING PAN-INDIA ON ORDERS ABOVE ₹2,999");
   const [saleBg, setSaleBg] = useState("#ED3833");
 
   useEffect(() => {
-    // Check maintenance status
-    const checkStatus = () => {
+    const checkStatus = async () => {
       const isMaint = localStorage.getItem('urbn_maintenance_mode') === 'true';
       setMaintenanceMode(isMaint);
 
-      const savedCms = localStorage.getItem('urbn_site_cms');
-      if (savedCms) {
+      // Fetch CMS settings directly from Supabase Cloud
+      const { data, error } = await supabase
+        .from('products')
+        .select('*')
+        .eq('slug', 'urbn_cms_settings_meta')
+        .maybeSingle();
+
+      if (!error && data && data.description) {
         try {
-          const parsed = JSON.parse(savedCms);
-          if (parsed.announcementText) setSaleText(parsed.announcementText);
-          if (parsed.announcementBgColor) setSaleBg(parsed.announcementBgColor);
-          if (parsed.saleModeActive !== undefined) setSaleActive(parsed.saleModeActive);
+          const cloudCms = JSON.parse(data.description);
+          if (cloudCms.announcementText) setSaleText(cloudCms.announcementText);
+          if (cloudCms.announcementBgColor) setSaleBg(cloudCms.announcementBgColor);
+          if (cloudCms.saleModeActive !== undefined) setSaleActive(cloudCms.saleModeActive);
         } catch (e) {}
       }
     };
 
     checkStatus();
-    window.addEventListener('storage', checkStatus);
-    const interval = setInterval(checkStatus, 1000);
-    return () => {
-      window.removeEventListener('storage', checkStatus);
-      clearInterval(interval);
-    };
+    const interval = setInterval(checkStatus, 3000);
+    return () => clearInterval(interval);
   }, []);
 
   return (
