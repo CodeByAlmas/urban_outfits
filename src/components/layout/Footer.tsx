@@ -402,9 +402,7 @@ export default function Footer() {
               {/* Social Icons */}
               <div className="flex items-center gap-3">
                 <a href="https://www.instagram.com/urbanoutfits_/" className="w-9 h-9 rounded-full border border-neutral-700 flex items-center justify-center text-neutral-300 hover:text-[#ED3833] hover:border-[#ED3833] hover:scale-105 transition-all duration-300 font-mono-custom text-[11px]">IG</a>
-                <a href="#" className="w-9 h-9 rounded-full border border-neutral-700 flex items-center justify-center text-neutral-300 hover:text-[#ED3833] hover:border-[#ED3833] hover:scale-105 transition-all duration-300 font-mono-custom text-[11px]">X</a>
                 <a href="https://www.youtube.com/@UrbanOutfits_13" className="w-9 h-9 rounded-full border border-neutral-700 flex items-center justify-center text-neutral-300 hover:text-[#ED3833] hover:border-[#ED3833] hover:scale-105 transition-all duration-300 font-mono-custom text-[11px]">YT</a>
-                <a href="#" className="w-9 h-9 rounded-full border border-neutral-700 flex items-center justify-center text-neutral-300 hover:text-[#ED3833] hover:border-[#ED3833] hover:scale-105 transition-all duration-300 font-mono-custom text-[11px]">SP</a>
               </div>
 
               {/* Built Different Tag */}

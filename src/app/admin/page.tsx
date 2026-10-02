@@ -1,12 +1,8 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { getProductsFromSupabase, saveProductsToSupabase, uploadMediaToSupabaseStorage, deleteMediaFromSupabaseStorage, Product, ColorVariant } from '@/data/products';
-import { createClient } from '@supabase/supabase-js';
+import { getProductsFromSupabase, saveProductsToSupabase, uploadMediaToSupabaseStorage, deleteMediaFromSupabaseStorage, Product, ColorVariant, supabase } from '@/data/products';
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co';
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder-key';
-const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 export default function AdminPanel() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);

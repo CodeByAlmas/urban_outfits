@@ -7,9 +7,9 @@ export default function FloatingActions() {
   const [inquiryType, setInquiryType] = useState('Custom Quotation / Pricing');
   const [customMessage, setCustomMessage] = useState('');
 
-  const storeOwnerWhatsApp = "7275023613"; // Client ka actual WhatsApp number
-  const storeGoogleMapsUrl = "https://www.google.com/maps/place/URBAN+OUTFITS/@26.4288102,80.3919799,17z/data=!3m1!4b1!4m6!3m5!1s0x399c41f2dc5d29d7:0xff1f0c6f4c08675d!8m2!3d26.4288054!4d80.3945548!16s%2Fg%2F11y6nvvt0t?entry=ttu&g_ep=EgoyMDI2MDkxMy4wIKXMDSoASAFQAw%3D%3D"; // Store ki location
-  const storeInstagramUrl = "https://www.instagram.com/urbanoutfits_"; // Yahan apna Instagram handle/link daal dena
+  const storeOwnerWhatsApp = "7275023613";
+  const storeGoogleMapsUrl = "https://www.google.com/maps/place/URBAN+OUTFITS/@26.4288102,80.3919799,17z/data=!3m1!4b1!4m6!3m5!1s0x399c41f2dc5d29d7:0xff1f0c6f4c08675d!8m2!3d26.4288054!4d80.3945548!16s%2Fg%2F11y6nvvt0t?entry=ttu&g_ep=EgoyMDI2MDkxMy4wIKXMDSoASAFQAw%3D%3D";
+  const storeInstagramUrl = "https://www.instagram.com/urbanoutfits_";
 
   const handleSendWhatsApp = (e: React.FormEvent) => {
     e.preventDefault();
@@ -24,12 +24,12 @@ export default function FloatingActions() {
       {/* Floating Action Buttons Container (Bottom Right) */}
       <div className="fixed bottom-6 right-6 z-50 flex flex-col gap-3 font-mono-custom select-none">
         
-        {/* Google Maps Store Locator Button */}
+        {/* Google Maps Store Locator Button (Google Maps Red Theme) */}
         <a 
           href={storeGoogleMapsUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className="w-12 h-12 bg-white text-black border-2 border-black flex items-center justify-center shadow-xl hover:bg-black hover:text-white transition-all duration-300 group cursor-pointer"
+          className="w-12 h-12 bg-[#EA4335] text-white border-2 border-black flex items-center justify-center shadow-xl hover:scale-110 transition-all duration-300 group cursor-pointer"
           title="View Store Location on Google Maps"
         >
           <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24">
@@ -37,12 +37,12 @@ export default function FloatingActions() {
           </svg>
         </a>
 
-        {/* Instagram Profile Link Button */}
+        {/* Instagram Profile Link Button (Instagram Gradient Theme) */}
         <a 
           href={storeInstagramUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className="w-12 h-12 bg-white text-black border-2 border-black flex items-center justify-center shadow-xl hover:bg-black hover:text-white transition-all duration-300 group cursor-pointer"
+          className="w-12 h-12 bg-gradient-to-tr from-[#feda75] via-[#d62976] to-[#4f5bd5] text-white border-2 border-black flex items-center justify-center shadow-xl hover:scale-110 transition-all duration-300 group cursor-pointer"
           title="Follow Us on Instagram"
         >
           <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24">
