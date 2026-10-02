@@ -13,6 +13,8 @@ export default function SEOHead() {
     "description": "Structure meets street. Premium wearable avant-garde streetwear, tactical outerwear, oversized hoodies, and urban aesthetics designed in India.",
     "address": {
       "@type": "PostalAddress",
+      "addressLocality": "Kanpur",
+      "addressRegion": "Uttar Pradesh",
       "addressCountry": "IN"
     },
     "priceRange": "₹₹",
